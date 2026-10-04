@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -36,13 +37,49 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-# --- App ---
-app = FastAPI(title="EDS PIXEL API")
-api = APIRouter(prefix="/api")
-bearer = HTTPBearer(auto_error=False)
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("edspixel")
+
+# --- Lifespan (Startup & Shutdown) ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await db.users.create_index("email", unique=True)
+    await db.tickets.create_index("code", unique=True)
+    await db.tickets.create_index("status")
+    await db.tickets.create_index("created_at")
+    await db.products.create_index("barcode")
+    await db.products.create_index("name")
+
+    existing = await db.users.find_one({"email": ADMIN_EMAIL})
+    if not existing:
+        await db.users.insert_one({
+            "id": str(uuid.uuid4()),
+            "email": ADMIN_EMAIL,
+            "name": "Emilio De Leo",
+            "role": "admin",
+            "password_hash": hash_pw(ADMIN_PASSWORD),
+            "must_change_password": True,
+            "created_at": now_iso(),
+        })
+        logger.info(f"Seeded admin {ADMIN_EMAIL} (first-login password change required)")
+
+    # Seed settings
+    if not await db.settings.find_one({"id": "singleton"}):
+        s = SettingsIn().model_dump()
+        s["id"] = "singleton"
+        await db.settings.insert_one(s)
+        logger.info("Seeded default settings")
+        
+    yield
+    
+    # Shutdown
+    client.close()
+
+# --- App ---
+app = FastAPI(title="EDS PIXEL API", lifespan=lifespan)
+api = APIRouter(prefix="/api")
+bearer = HTTPBearer(auto_error=False)
 
 
 # --- Helpers ---
@@ -72,7 +109,6 @@ def now_iso() -> str:
 
 
 def gen_ticket_code() -> str:
-    # 8 hex chars = ~4.3B combos per day, non-enumerable
     return f"EDS-{datetime.now().strftime('%y%m%d')}-{pysecrets.token_hex(4).upper()}"
 
 
@@ -203,8 +239,8 @@ class StatusChange(BaseModel):
 
 class MessageIn(BaseModel):
     text: str = ""
-    photo_data: Optional[str] = None  # base64 data URL (lab only, validated)
-    author: Optional[str] = None  # for public: customer; for private: user name
+    photo_data: Optional[str] = None
+    author: Optional[str] = None
 
 
 class ChangePasswordIn(BaseModel):
@@ -361,7 +397,6 @@ async def put_settings(data: SettingsIn, _: dict = Depends(require_admin)):
     return doc
 
 
-# Public settings (minimal) for tracking page
 @api.get("/public/settings")
 async def public_settings(request: Request):
     check_public_rate(request)
@@ -457,7 +492,7 @@ async def delete_ticket(ticket_id: str, _: dict = Depends(require_admin)):
     return {"ok": True}
 
 
-# --- Customers (aggregated from tickets) ---
+# --- Customers ---
 @api.get("/customers")
 async def list_customers(_: dict = Depends(get_current_user)):
     pipeline = [
@@ -498,7 +533,7 @@ async def customer_detail(phone: str, _: dict = Depends(get_current_user)):
     }
 
 
-# Public tracking — rate limited and PII minimized
+# Public tracking
 _PUBLIC_HIDE = {"_id": 0, "pin": 0, "pattern": 0, "imei": 0, "part_cost": 0,
                 "customer_phone": 0, "customer_email": 0, "notes": 0, "created_by": 0}
 
@@ -524,7 +559,7 @@ async def track(code: str, request: Request):
     return doc
 
 
-# --- Ticket Messages (chat Lab <-> Cliente) ---
+# --- Messages ---
 @api.get("/tickets/{ticket_id}/messages")
 async def list_messages(ticket_id: str, _: dict = Depends(get_current_user)):
     docs = await db.messages.find({"ticket_id": ticket_id}, {"_id": 0}).sort("created_at", 1).to_list(1000)
@@ -582,7 +617,7 @@ async def public_create_message(code: str, data: MessageIn, request: Request):
         "role": "customer",
         "author": author,
         "text": text,
-        "photo_data": None,  # customer non può caricare foto
+        "photo_data": None,
         "created_at": now_iso(),
     }
     await db.messages.insert_one(doc)
@@ -590,7 +625,7 @@ async def public_create_message(code: str, data: MessageIn, request: Request):
     return doc
 
 
-# --- Accounting / Reports with periods ---
+# --- Accounting ---
 def _period_range(period: str):
     now = datetime.now(timezone.utc)
     if period == "today":
@@ -599,7 +634,7 @@ def _period_range(period: str):
     if period == "month":
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return start.isoformat(), (now + timedelta(days=1)).isoformat()
-    return "", ""  # all time
+    return "", ""
 
 
 @api.get("/reports/accounting")
@@ -653,7 +688,7 @@ async def del_expense(expense_id: str, _: dict = Depends(require_admin)):
     return {"ok": True}
 
 
-# --- Products / Warehouse ---
+# --- Products ---
 @api.get("/products")
 async def list_products(q: Optional[str] = None, category: Optional[str] = None, _: dict = Depends(get_current_user)):
     query = {}
@@ -717,7 +752,7 @@ async def del_product(product_id: str, _: dict = Depends(require_admin)):
     return {"ok": True}
 
 
-# --- Sales (POS Cassa) ---
+# --- Sales ---
 @api.get("/sales")
 async def list_sales(_: dict = Depends(get_current_user)):
     docs = await db.sales.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
@@ -746,7 +781,7 @@ async def add_sale(data: SaleIn, user: dict = Depends(get_current_user)):
     return doc
 
 
-# --- Dashboard / Reports ---
+# --- Dashboard ---
 @api.get("/dashboard/stats")
 async def dashboard_stats(_: dict = Depends(get_current_user)):
     pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}, "value": {"$sum": "$estimate"}}}]
@@ -757,10 +792,8 @@ async def dashboard_stats(_: dict = Depends(get_current_user)):
         counts[r["_id"]] = r["count"]
         values[r["_id"]] = r.get("value", 0) or 0
 
-    # Denaro fermo = pronto + in_lavorazione (riparazioni non ancora saldate)
     denaro_fermo = (values.get("pronto", 0) or 0) + (values.get("in_lavorazione", 0) or 0)
 
-    # Today sales + delivered
     start_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     today_sales = await db.sales.find({"created_at": {"$gte": start_day}}, {"_id": 0}).to_list(500)
     today_sales_total = sum(s["total"] for s in today_sales)
@@ -770,7 +803,6 @@ async def dashboard_stats(_: dict = Depends(get_current_user)):
 
     today_total = today_sales_total + today_repairs_total
 
-    # Expenses -> daily
     expenses = await db.expenses.find({}, {"_id": 0}).to_list(500)
     daily_fixed = 0
     for e in expenses:
@@ -832,42 +864,6 @@ async def daily_report(date: Optional[str] = None, _: dict = Depends(get_current
     }
 
 
-# --- Startup ---
-@app.on_event("startup")
-async def startup():
-    await db.users.create_index("email", unique=True)
-    await db.tickets.create_index("code", unique=True)
-    await db.tickets.create_index("status")
-    await db.tickets.create_index("created_at")
-    await db.products.create_index("barcode")
-    await db.products.create_index("name")
-
-    existing = await db.users.find_one({"email": ADMIN_EMAIL})
-    if not existing:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": ADMIN_EMAIL,
-            "name": "Emilio De Leo",
-            "role": "admin",
-            "password_hash": hash_pw(ADMIN_PASSWORD),
-            "must_change_password": True,
-            "created_at": now_iso(),
-        })
-        logger.info(f"Seeded admin {ADMIN_EMAIL} (first-login password change required)")
-
-    # Seed settings
-    if not await db.settings.find_one({"id": "singleton"}):
-        s = SettingsIn().model_dump()
-        s["id"] = "singleton"
-        await db.settings.insert_one(s)
-        logger.info("Seeded default settings")
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    client.close()
-
-
 app.include_router(api)
 
 app.add_middleware(
@@ -877,3 +873,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)
