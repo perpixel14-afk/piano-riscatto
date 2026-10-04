@@ -1,0 +1,306 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --eds-bg: #0b132b;
+  --eds-bg-2: #0f172a;
+  --eds-card: #1e293b;
+  --eds-border: #334155;
+  --eds-cyan: #06b6d4;
+  --eds-blue: #38bdf8;
+  --eds-green: #10b981;
+  --eds-orange: #f59e0b;
+  --eds-red: #ef4444;
+}
+
+/* Theme-specific tints for sidebar background */
+html[data-theme='emerald'] { --eds-sidebar: #06201a; }
+html[data-theme='cyber']   { --eds-sidebar: #0d0620; }
+html[data-theme='quantum'] { --eds-sidebar: #0a0f24; }
+
+html,
+body,
+#root {
+  background: var(--eds-bg);
+  color: #f8fafc;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-mono-eds {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Themed utility classes (replace cyan-* defaults when theme applies) */
+.theme-accent-text { color: var(--eds-cyan); }
+.theme-accent-bg { background: var(--eds-cyan); }
+.theme-accent-border { border-color: var(--eds-cyan); }
+
+/* ShadCN tokens — dark Quantum */
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 189 94% 43%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 20%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 189 94% 43%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 24%;
+    --input: 217 33% 24%;
+    --ring: 189 94% 43%;
+    --radius: 0.75rem;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--eds-bg); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--eds-cyan); }
+
+/* Noise overlay */
+.eds-noise { position: relative; }
+.eds-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.eds-glow { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 20px 60px -20px rgba(0,0,0,0.5); }
+.eds-cyan-glow:hover { box-shadow: 0 8px 32px -8px rgba(255,255,255,0.15); }
+
+@keyframes eds-pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+.eds-pulse { animation: eds-pulse 2s infinite; }
+
+/* ====================================================================
+   PRINT: isolate A4 vs thermal label completely.
+   Caller sets a class on <html>: `print-mode-a4`, `print-mode-label`,
+   `print-mode-lowstock`. Only the matching print-root is shown.
+==================================================================== */
+@media screen {
+  .print-only { display: none !important; }
+}
+
+/* @page rules must live at the top level (not inside a selector).
+   We define the default A4 and let labels inherit the printer's roll size. */
+@page { size: A4 portrait; margin: 8mm; }
+
+@media print {
+  html, body, #root {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body { margin: 0 !important; padding: 0 !important; }
+
+  /* Hide every top-level child of body (sidebar, modals, toasts, main) */
+  body > *:not(.print-root-a4):not(.print-root-label):not(.print-root-lowstock) {
+    display: none !important;
+  }
+
+  /* The three print roots: only the matching one is visible */
+  .print-root-a4,
+  .print-root-label,
+  .print-root-lowstock {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    display: block !important;
+    background: #ffffff !important;
+    color: #000 !important;
+    z-index: auto !important;
+  }
+
+  html:not(.print-mode-a4) .print-root-a4 { display: none !important; }
+  html:not(.print-mode-label) .print-root-label { display: none !important; }
+  html:not(.print-mode-lowstock) .print-root-lowstock { display: none !important; }
+
+  /* Reset dark-theme styles inside printable content */
+  .print-root-a4,
+  .print-root-a4 *,
+  .print-root-label,
+  .print-root-label *,
+  .print-root-lowstock,
+  .print-root-lowstock * {
+    color: #000 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-color: #000 !important;
+  }
+
+  /* Preserve explicit black backgrounds (PIN box, headers) */
+  .print-bg-black,
+  .print-bg-black * {
+    background: #000 !important;
+    color: #ffffff !important;
+    border-color: #000 !important;
+  }
+
+  .no-print, .no-print * { display: none !important; }
+}
+
+.print-a4 {
+  width: 194mm;
+  height: 281mm;
+  display: flex;
+  flex-direction: column;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  overflow: hidden;
+  color: #000;
+  background: #fff;
+}
+.print-a4-horizontal {
+  width: 281mm;
+  height: 194mm;
+  display: flex;
+  flex-direction: row;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  overflow: hidden;
+  color: #000;
+  background: #fff;
+}
+.print-a4-half {
+  height: 138mm;
+  padding: 5mm;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.print-a4-half-h {
+  width: 138mm;
+  height: 100%;
+  padding: 5mm;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.print-a4-divider {
+  height: 5mm;
+  border-top: 2px dashed #000;
+  margin: 0;
+  text-align: center;
+  font-size: 8pt;
+  color: #555;
+  letter-spacing: 4px;
+  line-height: 5mm;
+}
+.print-a4-divider-v {
+  width: 5mm;
+  border-left: 2px dashed #000;
+  text-align: center;
+  font-size: 8pt;
+  color: #555;
+  writing-mode: vertical-rl;
+  line-height: 5mm;
+}
+
+/* Low-stock PDF */
+.print-lowstock {
+  width: 194mm;
+  padding: 6mm;
+  box-sizing: border-box;
+  color: #000;
+  background: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ====== Thermal labels: single page per label, no A4 constraints ====== */
+.print-label-std,
+.print-label-mini,
+.print-label-banco {
+  page-break-after: always;
+}
+
+.print-label-std {
+  width: 57mm;
+  height: 32mm;
+  padding: 1.5mm;
+  box-sizing: border-box;
+  font-family: 'JetBrains Mono', monospace;
+  color: #000;
+  background: #fff;
+  display: flex;
+  gap: 2mm;
+  align-items: center;
+  page-break-after: always;
+}
+
+.print-label-mini {
+  width: 60mm;
+  height: 20mm;
+  padding: 1mm 1.5mm;
+  box-sizing: border-box;
+  font-family: 'JetBrains Mono', monospace;
+  color: #000;
+  background: #fff;
+  display: flex;
+  gap: 1.5mm;
+  align-items: center;
+  page-break-after: always;
+}
+
+.print-label-banco {
+  width: 70mm;
+  height: 50mm;
+  padding: 2mm;
+  box-sizing: border-box;
+  font-family: 'JetBrains Mono', monospace;
+  color: #000;
+  background: #fff;
+  border: 2px solid #000;
+  page-break-after: always;
+}
+
+/* Keep print components rendered off-screen when NOT printing */
+.print-root-a4,
+.print-root-label,
+.print-root-lowstock {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  background: #ffffff;
+  color: #000;
+  z-index: -1;
+}

@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 4 testing covered Warehouse/Products backend endpoints, Warehouse UI flows, Customers WhatsApp/Storico UI, and PrintA4 duplice card structural verification. Backend pytest: 7/7 passed — POST /api/products creates with unique barcode (duplicate -> 400), GET /api/products supports q and category filters, GET /api/products/barcode/{bc} returns 404 for missing, PUT partial update preserves untouched fields, POST /api/products/{id}/stock applies delta and never goes below 0, DELETE is admin-only (tecnico -> 403). Frontend: admin login OK, nav-warehouse visible, /warehouse shows 4 stat cards (stat-count/qty/cost/sale), scanner-input Enter with non-existent barcode opens ProductDialog with pd-barcode pre-filled, scanner Enter with existing barcode shows 'Trovato:' toast, ProductDialog (pd-name/category/stock/cost/sale/save) persists product, category filters (cat-all/display/accessori/etc.) work, stock-plus-{id} and stock-minus-{id} update real-time (verified 7->8->7), del-product + confirm-del-product works. Customers page: customer-history-{phone} and customer-whatsapp-{phone} buttons both present on card, dialog has detail-whatsapp + 'Riparate' + 'Fatturato' stats + 'Dispositivi riparati' chip. PrintA4: clicking action-print-a4-{code} sets html.className to 'print-mode-a4' and injects .print-root-a4 before window.print(); captured print root contains both 'COPIA CLIENTE' and 'COPIA LABORATORIO', 'PIN', 'Garanzia 90 giorni' / warranty text, the divider 'Piega e Taglia' and ALL 12 checklist items (Accensione, Display / LCD, Touch, Ricarica & USB, Fotocamera Posteriore/Frontale, Audio Ricevitore/Speaker, Microfono, Vibrazione, Face/Touch ID, Wi-Fi / Rete). Regression (dashboard/tickets/customers nav) still working.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ProductDialog + customer detail dialog", "issues": ["Radix DialogContent console warning: 'Missing Description or aria-describedby={undefined}' — accessibility nit, add DialogDescription or aria-describedby to silence."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_products.py",
+    "/app/backend/tests/test_settings_branding.py",
+    "/app/test_reports/pytest/iter4_results.xml"
+  ],
+  "action_items": [
+    "(Optional, minor) Add DialogDescription or aria-describedby to Warehouse ProductDialog, delete-confirm Dialog, and Customers detail Dialog to silence Radix a11y warnings.",
+    "(Optional) The 'Riparazioni completate' section is conditionally rendered only when the customer has delivered tickets — this is correct behavior; just worth confirming with product.",
+    "(Code review, non-blocking) @app.on_event startup/shutdown deprecated in FastAPI — migrate to lifespan context manager."
+  ],
+  "critical_code_review_comments": [
+    "server.py products endpoints OK but create_product allows empty barcode strings; duplicate-check skipped if barcode is empty — multiple products with empty barcode allowed (intentional per model default='').",
+    "/api/products stock PATCH uses POST with StockDelta — fine, but there is no server-side authorization check restricting stock adjustments to admin; tecnico can freely adjust stock (acceptable for a repair shop app).",
+    "Warehouse.jsx: scanner-input value is set via uncontrolled DOM .value='' after Enter; works but mixes controlled/uncontrolled patterns — minor.",
+    "PrintA4.jsx: checklist and warranty texts are hardcoded (not from settings) except settings.warranty_terms override — acceptable."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_products.py (new)"
+  ],
+  "success_rate": {"backend": "100% (7/7)", "frontend": "100% (all 14 steps)"},
+  "test_credentials": "Valid (admin perpixel14@gmail.com/admin123, tecnico tecnico@edspixel.it/tecnico123).",
+  "seed_data_creation": "Transient TEST_UI_Prodotto created and deleted during Playwright run. All backend test products use TEST* barcode prefix and are deleted in finally blocks. Seed product barcode 8001234567890 not present in forked env (returns 404) — test tolerates this.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 4 fully verified. Backend regression suite now at /app/backend/tests/test_products.py (products CRUD + stock + admin-only delete) and /app/backend/tests/test_settings_branding.py (iter 3 settings/theme). Frontend print verification pattern uses init_script stub exposing window.__printCalled / __lastPrintHtmlClass / __lastPrintRootA4 — reuse for any new print flows. Note: toast text may pollute `page.locator('text=...')` assertions for a few seconds; filter assertions should use card selectors instead where possible."
+}

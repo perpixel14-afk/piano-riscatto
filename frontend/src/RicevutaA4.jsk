@@ -1,0 +1,114 @@
+import React from 'react';
+
+export default function RicevutaA4() {
+  const handleStampa = () => {
+    window.print();
+  };
+
+  return (
+    <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', padding: '20px' }}>
+      
+      {/* Stile CSS incorporato per forzare il formato A4 e nascondere pulsanti in stampa */}
+      <style>
+        {`
+          @media print {
+            body * { visibility: hidden; }
+            #modulo-stampa, #modulo-stampa * { visibility: visible; }
+            #modulo-stampa {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 210mm;
+              height: 297mm;
+              margin: 0;
+              padding: 20mm;
+              background-color: white;
+            }
+            .nascondi-in-stampa { display: none !important; }
+          }
+        `}
+      </style>
+
+      {/* Pulsante per avviare la stampa (visibile solo a schermo) */}
+      <div className="nascondi-in-stampa" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <button 
+          onClick={handleStampa}
+          style={{ padding: '12px 24px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
+        >
+          🖨️ Stampa Documento
+        </button>
+      </div>
+
+      {/* MODULO CARTACEO A4 */}
+      <div id="modulo-stampa" style={{ backgroundColor: 'white', maxWidth: '210mm', margin: '0 auto', padding: '40px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+        
+        {/* Intestazione Negozio */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #1e3a8a', paddingBottom: '20px', marginBottom: '20px' }}>
+          <div>
+            <h1 style={{ color: '#1e3a8a', margin: '0 0 10px 0', fontSize: '28px' }}>PixeLab</h1>
+            <p style={{ margin: '0', color: '#4b5563' }}>Via Roma 123, Napoli (NA)</p>
+            <p style={{ margin: '0', color: '#4b5563' }}>Tel: 333 1234567 | Email: info@pixelab.it</p>
+            <p style={{ margin: '0', color: '#4b5563' }}>P.IVA: 01234567890</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <h2 style={{ color: '#374151', margin: '0 0 5px 0' }}>RICEVUTA DI RIPARAZIONE</h2>
+            <p style={{ margin: '0', fontWeight: 'bold' }}>N° Ticket: #1042</p>
+            <p style={{ margin: '0' }}>Data: {new Date().toLocaleDateString('it-IT')}</p>
+          </div>
+        </div>
+
+        {/* Dati Cliente */}
+        <div style={{ marginBottom: '30px', padding: '15px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '5px' }}>
+          <h3 style={{ margin: '0 0 10px 0', color: '#1f2937', fontSize: '16px' }}>DATI CLIENTE</h3>
+          <p style={{ margin: '0 0 5px 0' }}><strong>Nome:</strong> Mario Rossi</p>
+          <p style={{ margin: '0 0 5px 0' }}><strong>Telefono:</strong> 340 9876543</p>
+          <p style={{ margin: '0' }}><strong>Dispositivo:</strong> iPhone 13 Pro (Nero) - Password: 123456</p>
+        </div>
+
+        {/* Tabella Servizi/Ricambi */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#1e3a8a', color: 'white' }}>
+              <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #e5e7eb' }}>Descrizione Intervento / Ricambio</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #e5e7eb', width: '80px' }}>Q.tà</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #e5e7eb', width: '120px' }}>Importo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '12px', border: '1px solid #e5e7eb' }}>Sostituzione Display Originale Apple</td>
+              <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #e5e7eb' }}>1</td>
+              <td style={{ padding: '12px', textAlign: 'right', border: '1px solid #e5e7eb' }}>€ 150,00</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '12px', border: '1px solid #e5e7eb' }}>Applicazione Pellicola Vetro Temperato</td>
+              <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #e5e7eb' }}>1</td>
+              <td style={{ padding: '12px', textAlign: 'right', border: '1px solid #e5e7eb' }}>€ 15,00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Totale */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
+          <div style={{ width: '250px', borderTop: '2px solid #1f2937', paddingTop: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: 'bold' }}>
+              <span>TOTALE:</span>
+              <span>€ 165,00</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Firme e Condizioni */}
+        <div style={{ marginTop: '50px', fontSize: '12px', color: '#6b7280' }}>
+          <p>Il cliente dichiara di aver preso visione e accettato le condizioni generali di riparazione. La garanzia sui ricambi installati è di 3 mesi dal ritiro.</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>
+            <div style={{ borderTop: '1px solid #9ca3af', width: '200px', textAlign: 'center', paddingTop: '5px' }}>Firma Cliente</div>
+            <div style={{ borderTop: '1px solid #9ca3af', width: '200px', textAlign: 'center', paddingTop: '5px' }}>Firma Tecnico (PixeLab)</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+

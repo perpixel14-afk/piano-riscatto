@@ -1,0 +1,4 @@
+/* No global styles — all handled via Tailwind + index.css */
+.App {
+  min-height: 100vh;
+}

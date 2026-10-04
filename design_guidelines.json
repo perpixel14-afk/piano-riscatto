@@ -1,0 +1,88 @@
+{
+  "brand": {
+    "name": "EDS PIXEL di Emilio De Leo",
+    "type": "SaaS Hub Gestionale per Laboratorio di Riparazioni Elettroniche",
+    "tagline": "Quantum Precision Repair & Workshop Management",
+    "theme_archetype": "THE PERFORMANCE PRO & ELECTRIC NEON (Quantum Tech Dark)"
+  },
+  "responsive": {
+    "breakpoint": "mobile-first",
+    "layout": "Mobile-first single-column reflow for dashboards and POS, stacking cards smoothly into grid-cols-1 on small screens, grid-cols-2 on tablet, grid-cols-4 on desktop. Touch POS grid scales down from 5 items row to responsive flex-wrap touch tiles with minimum 48px tap targets.",
+    "typography": "Fluid rem-based scaling. Desktop headings text-3xl to text-5xl max, mobile headings text-xl to text-2xl. Subtitles text-sm to text-base. Inputs and dropdowns set to text-base (16px equivalent) to avoid iOS automatic canvas zoom.",
+    "overflow_guard": "Strict overflow-x-hidden on root viewport containers. Tables wrap in scrollable x-containers. Grid children set to min-w-0 to prevent flex/grid blowouts.",
+    "tap_targets": "Minimum touch target height 48px for Cassa Touch POS, status quick action buttons, WhatsApp actions, and navigation triggers."
+  },
+  "typography": {
+    "font_family_heading": "Outfit, sans-serif",
+    "font_family_body": "Plus Jakarta Sans, sans-serif",
+    "font_family_mono": "JetBrains Mono, monospace",
+    "scale": {
+      "h1": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-normal",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "mono_label": "font-mono text-xs uppercase tracking-widest text-cyan-400"
+    }
+  },
+  "colors": {
+    "theme": "Dark Quantum",
+    "background_primary": "#0b132b",
+    "background_secondary": "#0f172a",
+    "background_card": "#1e293b",
+    "border_color": "#334155",
+    "text_primary": "#f8fafc",
+    "text_secondary": "#94a3b8",
+    "text_muted": "#64748b",
+    "accent_cyan": "#06b6d4",
+    "accent_electric_blue": "#38bdf8",
+    "accent_neon_green": "#10b981",
+    "accent_warning_orange": "#f59e0b",
+    "accent_danger_red": "#ef4444",
+    "gradient_hero": "linear-gradient(135deg, #0b132b 0%, #0f172a 50%, #1e1b4b 100%)",
+    "gradient_card_glow": "linear-gradient(180deg, rgba(6, 182, 212, 0.15) 0%, rgba(15, 23, 42, 0) 100%)"
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-slate-900/80 border border-slate-700/60 shadow-2xl shadow-cyan-950/20",
+    "card_style": "rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg hover:border-cyan-500/30 transition-all duration-200",
+    "kpi_glow_box": "relative overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 p-6 shadow-xl shadow-cyan-900/20",
+    "print_sheet_a4": "A4 vertical split sheet: exact 210mm width printable layout divided 50/50 vertically into 'COPIA CLIENTE' (Left) and 'COPIA LABORATORIO' (Right) with barcoding/QR, tear lines, legal terms, signature lines.",
+    "thermal_label": "Isolated 58mm/80mm label thermal print layout with crisp high-contrast QR code, ticket ID (e.g., EDS-8942), client name, device details, intake date."
+  },
+  "grids_and_layouts": {
+    "executive_dashboard": "Grid layout: top metric KPI bar (Tickets in registro, in lavorazione, pronti al ritiro, consegnati), heavy hero box for 'Denaro Fermo in Laboratorio' (€ value of uncollected repaired devices), 'Piano Riscatto Spese Fisse' target daily gauge (€175-190/giorno), interactive chart, and recent activity feed.",
+    "ticket_registry": "Dense filterable table & card grid with quick action bar: WhatsApp direct wa.me link with pre-filled status text, status advancement modal/popup, A4 receipt print preview, thermal label print trigger, edit ticket drawer, delete confirmation.",
+    "touch_pos_cassa": "Split layout: Left column = Touch quick item grid (Pellicola Idrogel, EPU HD, Cuffie, Cavi Type-C, Adapter) + search bar; Right column = Active Cart, client link, discount/tax controls, checkout tender button (Contanti, POS, Transfer).",
+    "public_tracking_portal": "Clean, high-trust single-page tracking view accessible via ?track=CODE or /track/:code showing live repair progress timeline, estimate total, technician notes, and WhatsApp support button."
+  },
+  "motion": {
+    "micro_interactions": "Framer Motion layout transitions on state updates, smooth drawer slide-ins, status badge pulsing animation for 'in lavorazione', instant tactile tap effects on POS grid buttons.",
+    "hover_effects": "Hover lift with subtle cyan drop-shadow (-translate-y-0.5), button focus rings ring-2 ring-cyan-400/50."
+  },
+  "component_rules": {
+    "use_javascript": "All components are JavaScript React files (.js / .jsx).",
+    "shadcn_customization": "Heavily styled for Dark Quantum theme. Select, Dialog, Sheet, Tabs, DropdownMenu must have non-transparent solid slate-900 background with border-slate-700.",
+    "sonner_toasts": "Sonner toasts styled with slate-900 background, cyan accent borders, and explicit high contrast white text.",
+    "date_and_time": "Use Italian date formatting (e.g., 24 Luglio 2026, 14:30) and EUR currency (€ 120,00)."
+  },
+  "image_urls": {
+    "tech_workspace": "https://images.unsplash.com/photo-1775519686045-cfd36ca0accc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHw0fHxlbGVjdHJvbmljcyUyMHJlcGFpciUyMHNob3AlMjB0ZWNobmljaWFuJTIwdGVjaG5vbG9neSUyMHdvcmtzcGFjZXxlbnwwfHx8fDE3OTA5NjQwNjB8MA&ixlib=rb-4.1.0&q=85",
+    "workshop_tools": "https://images.unsplash.com/photo-1742989667140-c69adadf556b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwxfHxlbGVjdHJvbmljcyUyMHJlcGFpciUyMHNob3AlMjB0ZWNobmljaWFuJTIwdGVjaG5vbG9neSUyMHdvcmtzcGFjZXxlbnwwfHx8fDE3OTA5NjQwNjB8MA&ixlib=rb-4.1.0&q=85"
+  },
+  "instructions_to_main_agent": {
+    "1_core_architecture": "Build a full-featured, responsive Italian management hub for 'EDS PIXEL di Emilio De Leo'. Maintain Dark Quantum theme strictly (#0b132b / #0f172a) with high-visibility electric cyan & neon green highlights.",
+    "2_data_and_mocking": "Provide comprehensive local state / API persistence for repairs, customers, POS transactions, fixed expenses, daily report, shop settings, and multi-role auth (Admin/Tecnico with default admin@edspixel.it / admin123).",
+    "3_key_features": [
+      "Multi-role Auth (Admin vs Tecnico access level)",
+      "Executive Dashboard 'Multiquantum' with KPI metrics, 'Denaro Fermo in Laboratorio' box, and 'Piano Riscatto Spese Fisse' (Target 175-190€/giorno target progress)",
+      "Ticket Registry with Quick Action Bar: WhatsApp wa.me trigger with automated message templates, status change modal, isolated A4 printable sheet (vertical split: Copia Cliente + Copia Laboratorio), Thermal Label print view with QR code",
+      "New Ticket Creation Wizard with device condition checklist, estimated price, deposit, pattern lock/PIN input",
+      "Touch POS Cassa with favorite accessories grid (Pellicola Idrogel, EPU HD, Cuffie, Cavi Type-C, Adapter), cart calculator, and instant thermal receipt trigger",
+      "Public Live Tracking Portal (?track=CODE) with progress steppers and live status check",
+      "Multi-tenant Shop Settings (Business info, A4 printer header, logo, fixed expenses manager)",
+      "Daily Accounting & Growth Tips section ('Consigli Business') providing actionable insights to optimize workshop profitability"
+    ],
+    "4_print_views": "Ensure print styles (@media print) hide navigation and isolate the printable container clean and crisp on white background with 100% legibility.",
+    "5_data_testid_requirement": "EVERY button, input, navigation tab, modal trigger, print button, and quick action icon MUST include a unique kebab-case data-testid (e.g. data-testid='kpi-denaro-fermo', data-testid='ticket-whatsapp-button-EDS-101', data-testid='pos-item-idrogel')."
+  }
+}

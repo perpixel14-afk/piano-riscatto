@@ -1,0 +1,27 @@
+{
+  "summary": "Re-verification smoke test for EDS PIXEL after iteration_1. Backend: admin + tecnico login OK, /api/auth/me returns correct role, /api/dashboard/stats returns full KPI payload (counts, denaro_fermo, target_min/max, daily_fixed_cost, today totals), /api/public/settings returns business_name unauthenticated, role gating confirmed (tecnico DELETE /api/tickets/* -> 403), POST /api/tickets creates ticket with code EDS-261002-7EFE and auto 4-digit PIN, GET /api/public/track/{code} strips pin/pattern/imei. Frontend: admin login succeeds, dashboard renders all KPIs (kpi-in-registro, kpi-in-lavorazione, kpi-pronto, kpi-consegnato, kpi-denaro-fermo, piano-riscatto, business-tip), admin accesses /settings, tecnico dashboard loads without 'Impostazioni' in sidebar (role gating OK). Public tracking page at /track/EDS-* renders track-card unauthenticated.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "POST /api/auth/login admin + tecnico return JWT (227/228 chars)",
+    "GET /api/auth/me returns role=admin for admin token",
+    "GET /api/dashboard/stats returns counts, denaro_fermo, target_min/max, daily_fixed_cost, today_sales_total, today_repairs_total, today_total",
+    "GET /api/public/settings unauth returns business_name='EDS PIXEL di Emilio De Leo'",
+    "DELETE /api/tickets/{id} with tecnico token -> 403 (adminOnly)",
+    "POST /api/tickets creates ticket with code=EDS-261002-7EFE, pin=8956 (4-digit auto), status=in_registro",
+    "GET /api/public/track/{code} unauth returns ticket WITHOUT pin/imei fields",
+    "Frontend admin login (login-email-input/login-password-input/login-submit-button) -> /dashboard",
+    "Dashboard KPIs render: kpi-denaro-fermo, piano-riscatto, business-tip all present",
+    "nav-settings data-testid present for admin, admin can navigate to /settings",
+    "Tecnico login -> /dashboard; sidebar does NOT show 'Impostazioni' entry (role-based UI gating confirmed via screenshot)",
+    "Public /track/{code} renders track-card unauth; invalid code shows track-not-found (confirmed iter_1)"
+  ],
+  "failed": [],
+  "action_items": [
+    "INFO (not blocking): login page data-testids are 'login-email-input', 'login-password-input', 'login-submit-button' (iteration_1 report used shorter names 'login-email'/'login-password'/'login-submit'). Current naming is fine and consistent.",
+    "Optional carry-over from iteration_1 (LOW): render action-whatsapp-* as <a href='wa.me/...' target='_blank'> so the href is DOM-inspectable. Not blocking."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "test_credentials": "Valid - /app/memory/test_credentials.md present with admin + tecnico creds, both working."
+}

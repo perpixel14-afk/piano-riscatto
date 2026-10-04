@@ -1,0 +1,29 @@
+{
+  "summary": "Iteration 5 testing covered: (1) Backend accounting /api/reports/accounting with periods today/month/all returns gross_revenue/part_cost_total/net_margin and net_margin == gross-cost (401 without auth). (2) Ticket part_cost: POST /api/tickets persists part_cost=30, PUT updates to 45, GET confirms, public /api/public/track/{code} excludes part_cost (and pin). (3) Status flow: new states valutazione + attesa_ricambi accepted by PATCH /api/tickets/{id}/status. (4) Chat endpoints: POST /api/tickets/{id}/messages (auth) stores role='lab' + photo_data; GET requires auth (401 unauth). POST /api/public/track/{code}/messages (no auth) sets role='customer' and strips photo_data (always null); GET public lists lab+customer. Backend pytest: 14/14 PASSED (/app/backend/tests/test_iter5.py). Frontend Playwright 19/19 PASSED: admin login, NewTicket part_cost field + real-time margin (€110,00 for 150-40), ticket row created, PrintA4LayoutDialog opens with a4-layout-vertical/horizontal buttons, choosing horizontal injects .print-root-a4 containing .print-a4-horizontal class and sets html.print-mode-a4 before window.print then cleans up after 500ms; vertical choice injects .print-a4 without .print-a4-horizontal. Chat lab: chat-feed/chat-text-input/chat-send/chat-upload-photo all present; text and photo upload (base64) persisted and visible. EditTicketDialog edit-part-cost + edit-margin real-time (€90,00 for 150-60). Reports: period-today/month/all buttons work; acc-gross/acc-cost/acc-margin cards update across periods. Warehouse: btn-print-lowstock adds html.print-mode-lowstock and injects .print-root-lowstock then cleans up. Public Tracking /?track={CODE}: 6-step timeline (in_registro, valutazione, in_lavorazione, attesa_ricambi, pronto, consegnato) all present; public-chat-input + public-chat-send send customer message visible in feed and in GET response; Foto dal Laboratorio section renders uploaded lab photo. Regression: Dashboard loads. Overall: backend 100% (14/14), frontend 100% (19/19).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter5.py",
+    "/app/test_reports/pytest/iter5_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py accounting_report: for period=='all' the tickets_q is {} (no filter on delivered_at), so repairs_total sums estimate across ALL tickets including non-delivered (in_registro/valutazione/etc.), potentially inflating gross_revenue vs part_cost_total (which is also summed on same set). For 'today'/'month' it correctly filters by delivered_at. Consider also requiring status in ('consegnato', ...) consistently.",
+    "TicketMessagesDialog polls /messages every 5s and Tracking.jsx polls every 7s — fine for small scale, but consider SSE/WebSocket when traffic grows.",
+    "Tracking.jsx has eslint-disable-next-line without rule name on the useEffect deps; acceptable but noisy.",
+    "PrintA4LayoutDialog / TicketMessagesDialog use DialogContent without DialogDescription — a11y warning (same as iter 4 note)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter5.py (new)"
+  ],
+  "success_rate": {"backend": "100% (14/14)", "frontend": "100% (19/19)"},
+  "test_credentials": "Valid (admin perpixel14@gmail.com/admin123, tecnico tecnico@edspixel.it/tecnico123).",
+  "seed_data_creation": "Transient TEST ticket EDS-261002-D48B (customer_name='TEST Iter5 UI') created during Playwright run and deleted via API after. Backend tests create and cleanup their own TEST ticket in finally. Chat messages left on the test ticket were removed along with its deletion (ticket_id orphan msgs may remain in db.messages — not asserted, not blocking).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iter 5 fully green. New backend tests at /app/backend/tests/test_iter5.py exercise accounting periods, part_cost persistence + public exclusion, status flow valutazione/attesa_ricambi, lab+public chat endpoints. Reuse the init_script pattern (window.__printCalled / __lastPrintHtmlClass / __lastPrintRootA4 / __lastPrintRootLowstock) for future print flows. Public tracking page is at /?track={CODE} (query string, no auth). Chat file input is hidden (data-testid chat-file-input) and triggered via chat-upload-photo button, use page.set_input_files on the hidden input directly. Note minor open question: accounting for period=all includes non-delivered tickets in repairs_total — may be intentional or a bug, flagged in critical_code_review_comments."
+}
